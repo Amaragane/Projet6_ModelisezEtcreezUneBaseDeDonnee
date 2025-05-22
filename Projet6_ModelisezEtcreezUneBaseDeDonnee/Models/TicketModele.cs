@@ -22,16 +22,16 @@ namespace Projet6_ModelisezEtcreezUneBaseDeDonnee.Models
         public string? Resolution { get; set; }
 
         [Required]
+        [ForeignKey("Version")]
         public int VersionId { get; set; }
 
         [Required]
+        [ForeignKey("Os")]
         public int OsId { get; set; }
 
         // Navigations
-        [ForeignKey("VersionId")]
         public virtual VersionModele Version { get; set; } = null!;
 
-        [ForeignKey("OsId")]
         public virtual OsModele Os { get; set; } = null!;
     }
 }

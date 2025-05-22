@@ -13,5 +13,7 @@ namespace Projet6_ModelisezEtcreezUneBaseDeDonnee.Models
 
         public virtual ICollection<TicketModele> Tickets { get; set; } = new List<TicketModele>();
 
+        public virtual ICollection<VersionModele> SupportedVersions { get; set; } = new List<VersionModele>();
+
     }
 }
