@@ -12,10 +12,14 @@ namespace Projet6_ModelisezEtcreezUneBaseDeDonnee.Data
         }
 
         // DbSets pour les entités
-        public DbSet<ProductModele> Products { get; set; } = null!;
-        public DbSet<VersionModele> Versions { get; set; } = null!;
-        public DbSet<OsModele> Os { get; set; } = null!;
-        public DbSet<TicketModele> Tickets { get; set; } = null!;
+        public DbSet<ProductModel> Products { get; set; } = null!;
+        public DbSet<VersionModel> Versions { get; set; } = null!;
+        public DbSet<OsModel> Os { get; set; } = null!;
+        public DbSet<TicketModel> Tickets { get; set; } = null!;
+
+        public DbSet<TicketModel> Statuts { get; set; } = null!;
+
+        public DbSet<ProductVersionOsSupport> ProductVersionOsSupport { get; set; } = null!;
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -36,61 +40,89 @@ namespace Projet6_ModelisezEtcreezUneBaseDeDonnee.Data
         /// </summary>
         private static void ConfigureRelationships(ModelBuilder modelBuilder)
         {
-            // Relation Product -> Versions (One-to-Many)
-            modelBuilder.Entity<VersionModele>()
-                .HasOne(v => v.Product)
-                .WithMany(p => p.Versions)
-                .HasForeignKey(v => v.ProductId)
-                .OnDelete(DeleteBehavior.Cascade);
-
-            // Relation Version <-> OS (Many-to-Many)
-            modelBuilder.Entity<VersionModele>()
-                .HasMany(v => v.SupportedOs)
-                .WithMany(os => os.SupportedVersions)
-                .UsingEntity(j => j.ToTable("VersionOsSupport"));
-
-            // Relation Version -> Tickets (One-to-Many)
-            modelBuilder.Entity<TicketModele>()
-                .HasOne(t => t.Version)
-                .WithMany(v => v.Tickets)
-                .HasForeignKey(t => t.VersionId)
-                .OnDelete(DeleteBehavior.Restrict);
 
             // Relation OS -> Tickets (One-to-Many)
-            modelBuilder.Entity<TicketModele>()
+            modelBuilder.Entity<TicketModel>()
                 .HasOne(t => t.Os)
                 .WithMany(os => os.Tickets)
                 .HasForeignKey(t => t.OsId)
                 .OnDelete(DeleteBehavior.Restrict);
-        }
+            // Relation Statut -> Tickets (One-to-Many)
+            modelBuilder.Entity<TicketModel>()
+                .HasOne(t => t.Statut)
+                .WithMany(s => s.Tickets)
+                .HasForeignKey(t => t.OsId)
+                .OnDelete(DeleteBehavior.Restrict);
+            // Relation Product -> Tickets (One-to-Many)
+            modelBuilder.Entity<TicketModel>()
+                .HasOne(t => t.Product)
+                .WithMany(p => p.Tickets)
+                .HasForeignKey(t => t.OsId)
+                .OnDelete(DeleteBehavior.Restrict);
+            // Relation Version -> Tickets (One-to-Many)
+            modelBuilder.Entity<TicketModel>()
+                .HasOne(t => t.Version)
+                .WithMany(v => v.Tickets)
+                .HasForeignKey(t => t.OsId)
+                .OnDelete(DeleteBehavior.Restrict);
 
+            modelBuilder.Entity<ProductVersionOsSupport>(entity =>
+                {
+                    // Clé primaire composée des 3 clés étrangères
+                    entity.HasKey(pvos => new { pvos.ProductId, pvos.VersionId, pvos.OsId
+        });
+
+                    // Relation avec Product
+                    entity.HasOne(pvos => pvos.Product)
+                        .WithMany() // Vous pouvez ajouter une propriété de navigation dans ProductModel si nécessaire
+                        .HasForeignKey(pvos => pvos.ProductId)
+                        .HasConstraintName("FK_ProductVersionOsSupport_Product")
+                        .OnDelete(DeleteBehavior.Cascade);
+
+                    // Relation avec Version
+                    entity.HasOne(pvos => pvos.Version)
+                        .WithMany() // Vous pouvez ajouter une propriété de navigation dans VersionModel si nécessaire
+                        .HasForeignKey(pvos => pvos.VersionId)
+                        .HasConstraintName("FK_ProductVersionOsSupport_Version")
+                        .OnDelete(DeleteBehavior.Restrict); // Restrict pour éviter la cascade multiple
+
+                    // Relation avec OS
+                    entity.HasOne(pvos => pvos.Os)
+                        .WithMany() // Vous pouvez ajouter une propriété de navigation dans OsModel si nécessaire
+                        .HasForeignKey(pvos => pvos.OsId)
+                        .HasConstraintName("FK_ProductVersionOsSupport_Os")
+                        .OnDelete(DeleteBehavior.Restrict); // Restrict pour éviter la cascade multiple
+
+                    // Nom de la table
+                    entity.ToTable("ProductVersionOsSupport");
+                        });
+
+        }
         /// <summary>
         /// Configure les indexes et contraintes pour optimiser les performances et garantir l'intégrité
         /// </summary>
         private static void ConfigureIndexesAndConstraints(ModelBuilder modelBuilder)
         {
-            // Index unique pour éviter les doublons Product-Version
-            modelBuilder.Entity<VersionModele>()
-                .HasIndex(v => new { v.ProductId, v.VersionName })
-                .IsUnique()
-                .HasDatabaseName("IX_Version_ProductId_VersionName");
 
             // Index sur les clés étrangères pour améliorer les performances des jointures
-            modelBuilder.Entity<TicketModele>()
+            modelBuilder.Entity<TicketModel>()
                 .HasIndex(t => t.VersionId)
                 .HasDatabaseName("IX_Ticket_VersionId");
 
-            modelBuilder.Entity<TicketModele>()
+            modelBuilder.Entity<TicketModel>()
                 .HasIndex(t => t.OsId)
                 .HasDatabaseName("IX_Ticket_OsId");
+            modelBuilder.Entity<TicketModel>()
+                .HasIndex(t => t.ProductId)
+                .HasDatabaseName("IX_Ticket_ProductId");
 
             // Index sur le statut des tickets pour les requêtes de filtrage
-            modelBuilder.Entity<TicketModele>()
+            modelBuilder.Entity<TicketModel>()
                 .HasIndex(t => t.Statut)
                 .HasDatabaseName("IX_Ticket_Statut");
 
             // Index sur la date de création pour les requêtes de tri chronologique
-            modelBuilder.Entity<TicketModele>()
+            modelBuilder.Entity<TicketModel>()
                 .HasIndex(t => t.DateCreation)
                 .HasDatabaseName("IX_Ticket_DateCreation");
         }

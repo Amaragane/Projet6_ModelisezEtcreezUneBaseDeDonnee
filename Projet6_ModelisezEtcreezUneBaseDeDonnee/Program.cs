@@ -1,5 +1,7 @@
 using Microsoft.EntityFrameworkCore;
 using Projet6_ModelisezEtcreezUneBaseDeDonnee.Data;
+using Projet6_ModelisezEtcreezUneBaseDeDonnee.Extensions;
+using Projet6_ModelisezEtcreezUneBaseDeDonnee.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -10,7 +12,20 @@ var connectionString = builder.Configuration.GetConnectionString("DefaultConnect
 builder.Services.AddDbContext<NexaWorksContext>(options =>
     options.UseSqlServer(connectionString));
 
+// Enregistrer le service de sélection de requêtes
+builder.Services.AddScoped<IQuerySelectionService, QuerySelectionService>();
+
 var app = builder.Build();
+
+// Initialize the database
+app.InitializeDatabase();
+
+// Display database statistics in development
+if (app.Environment.IsDevelopment())
+{
+    app.DisplayDatabaseStats();
+}
+
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
 {
