@@ -19,7 +19,8 @@ namespace Projet6_ModelisezEtcreezUneBaseDeDonnee.Controllers
 
         public IActionResult Index()
         {
-            return View();
+            // Rediriger vers l'interface de requêtes
+            return RedirectToAction("Index", "Query");
         }
 
 

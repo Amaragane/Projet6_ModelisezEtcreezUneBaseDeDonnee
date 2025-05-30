@@ -1,0 +1,515 @@
+@{
+    ViewData["Title"] = "Requêtes NexaWork";
+    Layout = null;
+}
+
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@ViewData["Title"]</title>
+    
+    <!-- CSS de l'interface -->
+    <link rel="stylesheet" href="~/css/query/query-interface.css" />
+</head>
+<body>
+    <div class="container">
+        <!-- Header -->
+        <div class="header">
+            <h1>🔍 NexaWork Query Center</h1>
+            <p>Interface de requêtes pour la base de données des tickets de support</p>
+        </div>
+        
+        <div class="content">
+
+                
+                <!-- Requête 1: Tous les problèmes en cours -->
+                <div class="query-description">
+                    <strong>Requête 1:</strong> Obtenir tous les problèmes en cours (tous les produits)
+                </div>
+                <div class="form-row">
+                    <button class="btn" onclick="executeQuery('1')">Exécuter la requête</button>
+                </div>
+                
+                <!-- Requête 2: Problèmes en cours par produit -->
+                <div class="query-description">
+                    <strong>Requête 2:</strong> Obtenir tous les problèmes en cours pour un produit (toutes les versions)
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="product2">Produit</label>
+                        <select id="product2" onchange="updateVersions(this.value, 'version2')">
+                            <option value="">-- Sélectionnez un produit --</option>
+                            @foreach (var product in ViewBag.Products)
+                            {
+                                <option value="@product.ProductId">@product.ProductName</option>
+                            }
+                        </select>
+                    </div>
+                    <button class="btn" onclick="executeQuery('2', {productId: document.getElementById('product2').value})">Exécuter</button>
+                </div>
+                
+                <!-- Requête 3: Problèmes en cours par produit et version -->
+                <div class="query-description">
+                    <strong>Requête 3:</strong> Obtenir tous les problèmes en cours pour un produit (une seule version)
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="product3">Produit</label>
+                        <select id="product3" onchange="updateVersions(this.value, 'version3')">
+                            <option value="">-- Sélectionnez un produit --</option>
+                            @foreach (var product in ViewBag.Products)
+                            {
+                                <option value="@product.ProductId">@product.ProductName</option>
+                            }
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="version3">Version</label>
+                        <select id="version3">
+                            <option value="">-- Sélectionnez d'abord un produit --</option>
+                        </select>
+                    </div>
+                    <button class="btn" onclick="executeQuery('3', {productId: document.getElementById('product3').value, versionId: document.getElementById('version3').value})">Exécuter</button>
+                </div>
+
+            
+
+                
+                <!-- Requête 4: Problèmes sur période par produit -->
+                <div class="query-description">
+                    <strong>Requête 4:</strong> Obtenir tous les problèmes rencontrés au cours d'une période donnée pour un produit
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="dateDebut4">Date début</label>
+                        <input type="date" id="dateDebut4">
+                    </div>
+                    <div class="form-group">
+                        <label for="dateFin4">Date fin</label>
+                        <input type="date" id="dateFin4">
+                    </div>
+                    <div class="form-group">
+                        <label for="product4">Produit</label>
+                        <select id="product4">
+                            <option value="">-- Sélectionnez un produit --</option>
+                            @foreach (var product in ViewBag.Products)
+                            {
+                                <option value="@product.ProductId">@product.ProductName</option>
+                            }
+                        </select>
+                    </div>
+                    <button class="btn" onclick="executeQuery('4', {dateDebut: document.getElementById('dateDebut4').value, dateFin: document.getElementById('dateFin4').value, productId: document.getElementById('product4').value})">Exécuter</button>
+                </div>
+                
+                <!-- Requête 5: Problèmes sur période par produit et version -->
+                <div class="query-description">
+                    <strong>Requête 5:</strong> Obtenir tous les problèmes rencontrés au cours d'une période donnée pour un produit (une seule version)
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="dateDebut5">Date début</label>
+                        <input type="date" id="dateDebut5">
+                    </div>
+                    <div class="form-group">
+                        <label for="dateFin5">Date fin</label>
+                        <input type="date" id="dateFin5">
+                    </div>
+                    <div class="form-group">
+                        <label for="product5">Produit</label>
+                        <select id="product5" onchange="updateVersions(this.value, 'version5')">
+                            <option value="">-- Sélectionnez un produit --</option>
+                            @foreach (var product in ViewBag.Products)
+                            {
+                                <option value="@product.ProductId">@product.ProductName</option>
+                            }
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="version5">Version</label>
+                        <select id="version5">
+                            <option value="">-- Sélectionnez d'abord un produit --</option>
+                        </select>
+                    </div>
+                    <button class="btn" onclick="executeQuery('5', {dateDebut: document.getElementById('dateDebut5').value, dateFin: document.getElementById('dateFin5').value, productId: document.getElementById('product5').value, versionId: document.getElementById('version5').value})">Exécuter</button>
+                </div>
+
+            
+  
+                <!-- Requête 6: Mots-clés tous produits -->
+                <div class="query-description">
+                    <strong>Requête 6:</strong> Obtenir tous les problèmes en cours contenant une liste de mots-clés (tous les produits)
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="keywords6">Mots-clés (séparés par des virgules)</label>
+                        <input type="text" id="keywords6" placeholder="mémoire, crash, GPS">
+                    </div>
+                    <button class="btn" onclick="executeQuery('6', {motsCles: document.getElementById('keywords6').value})">Exécuter</button>
+                </div>
+                
+                <!-- Requête 7: Mots-clés par produit -->
+                <div class="query-description">
+                    <strong>Requête 7:</strong> Obtenir tous les problèmes en cours pour un produit contenant une liste de mots-clés
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="product7">Produit</label>
+                        <select id="product7">
+                            <option value="">-- Sélectionnez un produit --</option>
+                            @foreach (var product in ViewBag.Products)
+                            {
+                                <option value="@product.ProductId">@product.ProductName</option>
+                            }
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="keywords7">Mots-clés</label>
+                        <input type="text" id="keywords7" placeholder="mémoire, crash, GPS">
+                    </div>
+                    <button class="btn" onclick="executeQuery('7', {productId: document.getElementById('product7').value, motsCles: document.getElementById('keywords7').value})">Exécuter</button>
+                </div>
+                
+                <!-- Requête 8: Mots-clés par produit et version -->
+                <div class="query-description">
+                    <strong>Requête 8:</strong> Obtenir tous les problèmes en cours pour un produit contenant une liste de mots-clés (une seule version)
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="product8">Produit</label>
+                        <select id="product8" onchange="updateVersions(this.value, 'version8')">
+                            <option value="">-- Sélectionnez un produit --</option>
+                            @foreach (var product in ViewBag.Products)
+                            {
+                                <option value="@product.ProductId">@product.ProductName</option>
+                            }
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="version8">Version</label>
+                        <select id="version8">
+                            <option value="">-- Sélectionnez d'abord un produit --</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="keywords8">Mots-clés</label>
+                        <input type="text" id="keywords8" placeholder="mémoire, crash, GPS">
+                    </div>
+                    <button class="btn" onclick="executeQuery('8', {productId: document.getElementById('product8').value, versionId: document.getElementById('version8').value, motsCles: document.getElementById('keywords8').value})">Exécuter</button>
+                </div>
+
+                <!-- Requête 9: Problèmes sur période par produit avec mots-clés -->
+                <div class="query-description">
+                    <strong>Requête 9:</strong> Obtenir tous les problèmes rencontrés au cours d'une période donnée pour un produit contenant une liste de mots-clés (toutes les versions)
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="dateDebut9">Date début</label>
+                        <input type="date" id="dateDebut9">
+                    </div>
+                    <div class="form-group">
+                        <label for="dateFin9">Date fin</label>
+                        <input type="date" id="dateFin9">
+                    </div>
+                    <div class="form-group">
+                        <label for="product9">Produit</label>
+                        <select id="product9">
+                            <option value="">-- Sélectionnez un produit --</option>
+                            @foreach (var product in ViewBag.Products)
+                            {
+                                <option value="@product.ProductId">@product.ProductName</option>
+                            }
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="keywords9">Mots-clés</label>
+                        <input type="text" id="keywords9" placeholder="mémoire, crash, GPS">
+                    </div>
+                    <button class="btn" onclick="executeQuery('9', {dateDebut: document.getElementById('dateDebut9').value, dateFin: document.getElementById('dateFin9').value, productId: document.getElementById('product9').value, motsCles: document.getElementById('keywords9').value})">Exécuter</button>
+                </div>
+                
+                <!-- Requête 10: Problèmes sur période par produit et version avec mots-clés -->
+                <div class="query-description">
+                    <strong>Requête 10:</strong> Obtenir tous les problèmes rencontrés au cours d'une période donnée pour un produit contenant une liste de mots-clés (une seule version)
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="dateDebut10">Date début</label>
+                        <input type="date" id="dateDebut10">
+                    </div>
+                    <div class="form-group">
+                        <label for="dateFin10">Date fin</label>
+                        <input type="date" id="dateFin10">
+                    </div>
+                    <div class="form-group">
+                        <label for="product10">Produit</label>
+                        <select id="product10" onchange="updateVersions(this.value, 'version10')">
+                            <option value="">-- Sélectionnez un produit --</option>
+                            @foreach (var product in ViewBag.Products)
+                            {
+                                <option value="@product.ProductId">@product.ProductName</option>
+                            }
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="version10">Version</label>
+                        <select id="version10">
+                            <option value="">-- Sélectionnez d'abord un produit --</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="keywords10">Mots-clés</label>
+                        <input type="text" id="keywords10" placeholder="mémoire, crash, GPS">
+                    </div>
+                    <button class="btn" onclick="executeQuery('10', {dateDebut: document.getElementById('dateDebut10').value, dateFin: document.getElementById('dateFin10').value, productId: document.getElementById('product10').value, versionId: document.getElementById('version10').value, motsCles: document.getElementById('keywords10').value})">Exécuter</button>
+                </div>
+
+                <!-- Requête 11: Tous les problèmes résolus -->
+                <div class="query-description">
+                    <strong>Requête 11:</strong> Obtenir tous les problèmes résolus (tous les produits)
+                </div>
+                <div class="form-row">
+                    <button class="btn" onclick="executeQuery('11')">Exécuter la requête</button>
+                </div>
+                
+                <!-- Requête 12: Problèmes résolus par produit -->
+                <div class="query-description">
+                    <strong>Requête 12:</strong> Obtenir tous les problèmes résolus pour un produit (toutes les versions)
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="product12">Produit</label>
+                        <select id="product12">
+                            <option value="">-- Sélectionnez un produit --</option>
+                            @foreach (var product in ViewBag.Products)
+                            {
+                                <option value="@product.ProductId">@product.ProductName</option>
+                            }
+                        </select>
+                    </div>
+                    <button class="btn" onclick="executeQuery('12', {productId: document.getElementById('product12').value})">Exécuter</button>
+                </div>
+                
+                <!-- Requête 13: Problèmes résolus par produit et version -->
+                <div class="query-description">
+                    <strong>Requête 13:</strong> Obtenir tous les problèmes résolus pour un produit (une seule version)
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="product13">Produit</label>
+                        <select id="product13" onchange="updateVersions(this.value, 'version13')">
+                            <option value="">-- Sélectionnez un produit --</option>
+                            @foreach (var product in ViewBag.Products)
+                            {
+                                <option value="@product.ProductId">@product.ProductName</option>
+                            }
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="version13">Version</label>
+                        <select id="version13">
+                            <option value="">-- Sélectionnez d'abord un produit --</option>
+                        </select>
+                    </div>
+                    <button class="btn" onclick="executeQuery('13', {productId: document.getElementById('product13').value, versionId: document.getElementById('version13').value})">Exécuter</button>
+                </div>
+
+                <!-- Requête 14: Problèmes résolus sur période par produit -->
+                <div class="query-description">
+                    <strong>Requête 14:</strong> Obtenir tous les problèmes résolus au cours d'une période donnée pour un produit (toutes les versions)
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="dateDebut14">Date début</label>
+                        <input type="date" id="dateDebut14">
+                    </div>
+                    <div class="form-group">
+                        <label for="dateFin14">Date fin</label>
+                        <input type="date" id="dateFin14">
+                    </div>
+                    <div class="form-group">
+                        <label for="product14">Produit</label>
+                        <select id="product14">
+                            <option value="">-- Sélectionnez un produit --</option>
+                            @foreach (var product in ViewBag.Products)
+                            {
+                                <option value="@product.ProductId">@product.ProductName</option>
+                            }
+                        </select>
+                    </div>
+                    <button class="btn" onclick="executeQuery('14', {dateDebut: document.getElementById('dateDebut14').value, dateFin: document.getElementById('dateFin14').value, productId: document.getElementById('product14').value})">Exécuter</button>
+                </div>
+                
+                <!-- Requête 15: Problèmes résolus sur période par produit et version -->
+                <div class="query-description">
+                    <strong>Requête 15:</strong> Obtenir tous les problèmes résolus au cours d'une période donnée pour un produit (une seule version)
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="dateDebut15">Date début</label>
+                        <input type="date" id="dateDebut15">
+                    </div>
+                    <div class="form-group">
+                        <label for="dateFin15">Date fin</label>
+                        <input type="date" id="dateFin15">
+                    </div>
+                    <div class="form-group">
+                        <label for="product15">Produit</label>
+                        <select id="product15" onchange="updateVersions(this.value, 'version15')">
+                            <option value="">-- Sélectionnez un produit --</option>
+                            @foreach (var product in ViewBag.Products)
+                            {
+                                <option value="@product.ProductId">@product.ProductName</option>
+                            }
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="version15">Version</label>
+                        <select id="version15">
+                            <option value="">-- Sélectionnez d'abord un produit --</option>
+                        </select>
+                    </div>
+                    <button class="btn" onclick="executeQuery('15', {dateDebut: document.getElementById('dateDebut15').value, dateFin: document.getElementById('dateFin15').value, productId: document.getElementById('product15').value, versionId: document.getElementById('version15').value})">Exécuter</button>
+                </div>
+
+                <!-- Requête 16: Problèmes résolus avec mots-clés (tous produits) -->
+                <div class="query-description">
+                    <strong>Requête 16:</strong> Obtenir tous les problèmes résolus contenant une liste de mots-clés (tous les produits)
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="keywords16">Mots-clés (séparés par des virgules)</label>
+                        <input type="text" id="keywords16" placeholder="mémoire, crash, GPS">
+                    </div>
+                    <button class="btn" onclick="executeQuery('16', {motsCles: document.getElementById('keywords16').value})">Exécuter</button>
+                </div>
+                
+                <!-- Requête 17: Problèmes résolus avec mots-clés par produit -->
+                <div class="query-description">
+                    <strong>Requête 17:</strong> Obtenir tous les problèmes résolus pour un produit contenant une liste de mots-clés (toutes les versions)
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="product17">Produit</label>
+                        <select id="product17">
+                            <option value="">-- Sélectionnez un produit --</option>
+                            @foreach (var product in ViewBag.Products)
+                            {
+                                <option value="@product.ProductId">@product.ProductName</option>
+                            }
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="keywords17">Mots-clés</label>
+                        <input type="text" id="keywords17" placeholder="mémoire, crash, GPS">
+                    </div>
+                    <button class="btn" onclick="executeQuery('17', {productId: document.getElementById('product17').value, motsCles: document.getElementById('keywords17').value})">Exécuter</button>
+                </div>
+                
+                <!-- Requête 18: Problèmes résolus avec mots-clés par produit et version -->
+                <div class="query-description">
+                    <strong>Requête 18:</strong> Obtenir tous les problèmes résolus pour un produit contenant une liste de mots-clés (une seule version)
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="product18">Produit</label>
+                        <select id="product18" onchange="updateVersions(this.value, 'version18')">
+                            <option value="">-- Sélectionnez un produit --</option>
+                            @foreach (var product in ViewBag.Products)
+                            {
+                                <option value="@product.ProductId">@product.ProductName</option>
+                            }
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="version18">Version</label>
+                        <select id="version18">
+                            <option value="">-- Sélectionnez d'abord un produit --</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="keywords18">Mots-clés</label>
+                        <input type="text" id="keywords18" placeholder="mémoire, crash, GPS">
+                    </div>
+                    <button class="btn" onclick="executeQuery('18', {productId: document.getElementById('product18').value, versionId: document.getElementById('version18').value, motsCles: document.getElementById('keywords18').value})">Exécuter</button>
+                </div>
+
+                <!-- Requête 19: Problèmes résolus sur période par produit avec mots-clés -->
+                <div class="query-description">
+                    <strong>Requête 19:</strong> Obtenir tous les problèmes résolus au cours d'une période donnée pour un produit contenant une liste de mots-clés (toutes les versions)
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="dateDebut19">Date début</label>
+                        <input type="date" id="dateDebut19">
+                    </div>
+                    <div class="form-group">
+                        <label for="dateFin19">Date fin</label>
+                        <input type="date" id="dateFin19">
+                    </div>
+                    <div class="form-group">
+                        <label for="product19">Produit</label>
+                        <select id="product19">
+                            <option value="">-- Sélectionnez un produit --</option>
+                            @foreach (var product in ViewBag.Products)
+                            {
+                                <option value="@product.ProductId">@product.ProductName</option>
+                            }
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="keywords19">Mots-clés</label>
+                        <input type="text" id="keywords19" placeholder="mémoire, crash, GPS">
+                    </div>
+                    <button class="btn" onclick="executeQuery('19', {dateDebut: document.getElementById('dateDebut19').value, dateFin: document.getElementById('dateFin19').value, productId: document.getElementById('product19').value, motsCles: document.getElementById('keywords19').value})">Exécuter</button>
+                </div>
+                
+                <!-- Requête 20: Problèmes résolus sur période par produit et version avec mots-clés -->
+                <div class="query-description">
+                    <strong>Requête 20:</strong> Obtenir tous les problèmes résolus au cours d'une période donnée pour un produit contenant une liste de mots-clés (une seule version)
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="dateDebut20">Date début</label>
+                        <input type="date" id="dateDebut20">
+                    </div>
+                    <div class="form-group">
+                        <label for="dateFin20">Date fin</label>
+                        <input type="date" id="dateFin20">
+                    </div>
+                    <div class="form-group">
+                        <label for="product20">Produit</label>
+                        <select id="product20" onchange="updateVersions(this.value, 'version20')">
+                            <option value="">-- Sélectionnez un produit --</option>
+                            @foreach (var product in ViewBag.Products)
+                            {
+                                <option value="@product.ProductId">@product.ProductName</option>
+                            }
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="version20">Version</label>
+                        <select id="version20">
+                            <option value="">-- Sélectionnez d'abord un produit --</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="keywords20">Mots-clés</label>
+                        <input type="text" id="keywords20" placeholder="mémoire, crash, GPS">
+                    </div>
+                    <button class="btn" onclick="executeQuery('20', {dateDebut: document.getElementById('dateDebut20').value, dateFin: document.getElementById('dateFin20').value, productId: document.getElementById('product20').value, versionId: document.getElementById('version20').value, motsCles: document.getElementById('keywords20').value})">Exécuter</button>
+                </div>
+          
+            <!-- Zone de résultats -->
+            <div id="results" class="results hidden">
+                <h3>Résultats de la requête</h3>
+                <div id="results-content"></div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- JavaScript de l'interface -->
+    <script src="~/js/query/query-interface.js"></script>
+</body>
+</html>
